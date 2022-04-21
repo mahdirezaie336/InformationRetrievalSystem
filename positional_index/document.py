@@ -31,3 +31,13 @@ class Document:
     def __le__(self, other):
         return self.id <= other.id
 
+    @staticmethod
+    def parse_from_dict(_id: int, d: dict) -> 'Document':
+        doc = Document(_id)
+        doc.title = d['title']
+        doc.content = d['content']
+        doc.tags = d['tags']
+        doc.date = d['date']
+        doc.url = d['url']
+        doc.category = d['category']
+        return doc
