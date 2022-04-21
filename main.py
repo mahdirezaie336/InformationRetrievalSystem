@@ -1,5 +1,10 @@
 from parsivar import Normalizer, Tokenizer, FindStems
+from positional_index import PositionalIndex
 import json
+
+
+def preprocess():
+    pass
 
 
 def main():
