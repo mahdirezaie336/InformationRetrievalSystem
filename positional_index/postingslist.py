@@ -3,8 +3,8 @@ from document import Document
 
 class Item:
 
-    def __init__(self, document: Document):
-        self.document = document
+    def __init__(self, doc_id: int):
+        self.doc_id = doc_id
         self.indices = []
 
     def add_index(self, index):
@@ -25,7 +25,7 @@ class PostingsList:
     def add_posting(self, doc_id: int, index: int):
         if doc_id not in self.documents_index:
             self.documents_index[doc_id] = len(self.list)
-            new_item = Item(Document(doc_id))
+            new_item = Item(doc_id)
             new_item.add_index(index)
             # TODO: Handle adding in center of list
             self.list.append(new_item)

@@ -32,8 +32,8 @@ class Document:
         return self.id <= other.id
 
     @staticmethod
-    def parse_from_dict(_id: int, d: dict) -> 'Document':
-        doc = Document(_id)
+    def parse_from_dict(_id: str, d: dict) -> 'Document':
+        doc = Document(int(_id))
         doc.title = d['title']
         doc.content = d['content']
         doc.tags = d['tags']

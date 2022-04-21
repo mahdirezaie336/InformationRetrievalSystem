@@ -12,7 +12,8 @@ def load_json_file(address) -> dict:
 
 
 def preprocess(docs):
-    new_docs = {}
+    new_docs = []
+
     # Defining the preprocessors
     normalizer = Normalizer()
     tokenizer = Tokenizer()
@@ -28,9 +29,22 @@ def preprocess(docs):
         for token in tokens:
             if token not in stop_words:
                 nonstop_tokens.append(token)
-        stemmed_tokens = pd.Series(nonstop_tokens).apply(stemmer.convert_to_stem).values
-        new_docs[doc_id]['tokens'] = stemmed_tokens
+        stemmed_tokens = pd.Series(nonstop_tokens).apply(stemmer.convert_to_stem).values        # Getting stems
+
+        # Now creating document objects
+        new_doc = Document.parse_from_dict(doc_id, docs[doc_id])
+        new_doc.tokens = stemmed_tokens
+        new_docs.append(new_doc)
+
         print('Done with doc_id', doc_id, '!')
+    return new_docs
+
+
+def create_index(docs) -> PositionalIndex:
+    index = PositionalIndex()
+    for document in docs:
+        index.add_document(document)
+    return index
 
 
 def main():
@@ -38,11 +52,11 @@ def main():
     docs = load_json_file('./IR_data_news_12k.json')
 
     # Do preprocesses
+    docs = preprocess(docs)
 
-    text = normalizer.normalize(text)
-    print(text)
-    print(tokenizer.tokenize_words(text))
-    print(stemmer.convert_to_stem('آمدم'))
+    # Creating index
+    index = create_index(docs)
+    print(index.dictionary)
 
 
 if __name__ == '__main__':
