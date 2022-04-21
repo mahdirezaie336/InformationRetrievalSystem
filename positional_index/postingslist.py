@@ -1,5 +1,6 @@
 from document import Document
 
+
 class Item:
 
     def __init__(self, document: Document):
@@ -15,9 +16,18 @@ class Item:
 
 class PostingsList:
 
+    list: list[Item]
+
     def __init__(self):
         self.list = []
-        self.documents_index = {}
+        self.documents_index = {}           # Keeping index of documents in postings list to have fast access
 
     def add_posting(self, doc_id: int, index: int):
-        pass
+        if doc_id not in self.documents_index:
+            self.documents_index[doc_id] = len(self.list)
+            new_item = Item(Document(doc_id))
+            new_item.add_index(index)
+            self.list.append(new_item)
+        else:
+            doc_index = self.documents_index[doc_id]
+            self.list[doc_index].add_index(index)
