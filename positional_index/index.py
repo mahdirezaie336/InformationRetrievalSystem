@@ -21,3 +21,6 @@ class PositionalIndex:
     def add_document(self, document: Document):
         for i, token in enumerate(document.tokens):
             self.add_token(token, document.id, i)
+
+    def add_from_dict(self, doc_id: str, docs: dict):
+        self.add_document(Document.parse_from_dict(doc_id, docs))

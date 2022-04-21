@@ -1,7 +1,6 @@
 from parsivar import Normalizer, Tokenizer, FindStems
 from stopwordsiso import stopwords
 from positional_index.index import PositionalIndex
-from positional_index.document import Document
 import json
 import pandas as pd
 
@@ -13,8 +12,6 @@ def load_json_file(address) -> dict:
 
 
 def preprocess(docs):
-    new_docs = []
-
     # Defining the preprocessors
     normalizer = Normalizer()
     tokenizer = Tokenizer()
@@ -32,19 +29,15 @@ def preprocess(docs):
             if token not in stop_words:
                 nonstop_tokens.append(token)
         stemmed_tokens = pd.Series(nonstop_tokens).apply(stemmer.convert_to_stem).values        # Getting stems
-
-        # Now creating document objects
-        new_doc = Document.parse_from_dict(doc_id, docs[doc_id])
-        new_doc.tokens = stemmed_tokens
-        new_docs.append(new_doc)
+        docs[doc_id]['tokens'] = stemmed_tokens
     print('Finished preprocessing')
-    return new_docs
+    return docs
 
 
 def create_index(docs) -> PositionalIndex:
     index = PositionalIndex()
-    for document in docs:
-        index.add_document(document)
+    for doc_id in docs:
+        index.add_from_dict(doc_id, docs[doc_id])
     return index
 
 

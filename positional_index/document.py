@@ -40,4 +40,6 @@ class Document:
         doc.date = d['date']
         doc.url = d['url']
         doc.category = d['category']
+        if 'tokens' in d:
+            doc.tokens = d['tokens']
         return doc
