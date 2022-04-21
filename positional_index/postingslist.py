@@ -27,6 +27,7 @@ class PostingsList:
             self.documents_index[doc_id] = len(self.list)
             new_item = Item(Document(doc_id))
             new_item.add_index(index)
+            for item in self.list
             self.list.append(new_item)
         else:
             doc_index = self.documents_index[doc_id]

@@ -13,3 +13,16 @@ class Document:
 
     def __str__(self):
         return 'ID: ' + str(self.__id)
+
+    def __gt__(self, other):
+        return self.__id > other.__id
+
+    def __lt__(self, other):
+        return self.__id < other.__id
+
+    def __ge__(self, other):
+        return self.__id >= other.__id
+
+    def __le__(self, other):
+        return self.__id <= other.__id
+
