@@ -1,5 +1,5 @@
-from postingslist import PostingsList
-from document import Document
+from positional_index.postingslist import PostingsList
+from positional_index.document import Document
 
 
 class PositionalIndex:

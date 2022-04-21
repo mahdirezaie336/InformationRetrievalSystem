@@ -1,6 +1,7 @@
 from parsivar import Normalizer, Tokenizer, FindStems
 from stopwordsiso import stopwords
-from positional_index import PositionalIndex, Document
+from positional_index.index import PositionalIndex
+from positional_index.document import Document
 import json
 import pandas as pd
 
@@ -21,6 +22,7 @@ def preprocess(docs):
     stop_words = stopwords('fa')
 
     # Doing the preprocesses
+    print('Started preprocessing ...')
     for doc_id in docs:
         text = docs[doc_id]['content']
         normalized_text = normalizer.normalize(text)            # Normalization
@@ -35,8 +37,7 @@ def preprocess(docs):
         new_doc = Document.parse_from_dict(doc_id, docs[doc_id])
         new_doc.tokens = stemmed_tokens
         new_docs.append(new_doc)
-
-        print('Done with doc_id', doc_id, '!')
+    print('Finished preprocessing')
     return new_docs
 
 

@@ -1,6 +1,3 @@
-from document import Document
-
-
 class Item:
 
     def __init__(self, doc_id: int):

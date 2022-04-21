@@ -3,4 +3,6 @@ venv
 venv/*
 .idea/*
 *.json
+.ipynb_checkpoints
+
 
