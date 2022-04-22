@@ -50,7 +50,7 @@ def main():
 
     # Creating index
     index = create_index(docs)
-    print(index.dictionary)
+    print(index)
 
 
 if __name__ == '__main__':

@@ -7,8 +7,15 @@ class Item:
     def add_index(self, index):
         for i, item in enumerate(self.indices[::-1]):
             if index >= item:
-                self.indices.insert(i+1, index)
-                break
+                self.indices.insert(i + 1, index)
+                return
+        self.indices.append(index)
+
+    def __str__(self):
+        return str(self.doc_id) + ': ' + str(self.indices)
+
+    def __repr__(self):
+        return str(self)
 
 
 class PostingsList:
@@ -29,3 +36,9 @@ class PostingsList:
         else:
             doc_index = self.documents_index[doc_id]
             self.list[doc_index].add_index(index)
+
+    def __str__(self):
+        return str(self.list)
+
+    def __repr__(self):
+        return str(self)
