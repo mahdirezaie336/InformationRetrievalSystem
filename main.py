@@ -1,8 +1,5 @@
-from parsivar import Normalizer, Tokenizer, FindStems
-from stopwordsiso import stopwords
 from positional_index import PositionalIndex
 import json
-import pandas as pd
 
 
 def load_json_file(address) -> dict:
@@ -12,23 +9,11 @@ def load_json_file(address) -> dict:
 
 
 def preprocess(docs):
-    # Defining the preprocessors
-    normalizer = Normalizer()
-    tokenizer = Tokenizer()
-    stemmer = FindStems()
-    stop_words = stopwords('fa')
-
     # Doing the preprocesses
     print('Started preprocessing ...')
     for doc_id in docs:
         text = docs[doc_id]['content']
-        normalized_text = normalizer.normalize(text)            # Normalization
-        tokens = tokenizer.tokenize_words(normalized_text)      # Tokenization
-        nonstop_tokens = []                                     # Handling stop words
-        for token in tokens:
-            if token not in stop_words:
-                nonstop_tokens.append(token)
-        stemmed_tokens = pd.Series(nonstop_tokens).apply(stemmer.convert_to_stem).values        # Getting stems
+        stemmed_tokens = PositionalIndex.preprocess(text)
         docs[doc_id]['tokens'] = stemmed_tokens
     print('Finished preprocessing')
     return docs
