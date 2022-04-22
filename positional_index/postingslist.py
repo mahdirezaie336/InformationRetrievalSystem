@@ -77,9 +77,8 @@ class PostingsList:
         while i < len(self.list) and j < len(other.list):
             if self.list[i].doc_id == other.list[j].doc_id:
                 new_item = self.list[i] & other.list[j]
-                if len(new_item) > 0:
-                    new_item.doc_id = self.list[i].doc_id
-                    new_postings_list.add_item(new_item)
+                new_item.doc_id = self.list[i].doc_id
+                new_postings_list.add_item(new_item)
                 i += 1
                 j += 1
             elif self.list[i].doc_id > other.list[j].doc_id:

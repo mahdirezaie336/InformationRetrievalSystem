@@ -48,7 +48,8 @@ class PositionalIndex:
 
         result = {}
         for item in postings_list.list:
-            result[item.doc_id] = len(item.indices)
+            if len(item) > 0:
+                result[item.doc_id] = len(item)
         return result
 
     def query(self, query: str):
