@@ -23,10 +23,18 @@ class Item:
         while i < len(self.indices) and j < len(other.indices):
             if self.indices[i] == other.indices[j]:
                 new_item.indices.append(self.indices[i])
+                i += 1
+                j += 1
             elif self.indices[i] > other.indices[j]:
                 j += 1
             else:
                 i += 1
+        return new_item
+
+    def __add__(self, other: int):
+        new_item = Item(self.doc_id)
+        for index in self.indices:
+            new_item.indices.append(index + other)
         return new_item
 
 
@@ -68,8 +76,17 @@ class PostingsList:
                 new_item = self.list[i] & other.list[j]
                 new_item.doc_id = self.list[i].doc_id
                 new_postings_list.add_item(new_item)
+                i += 1
+                j += 1
             elif self.list[i].doc_id > other.list[j].doc_id:
                 j += 1
             else:
                 i += 1
+        return new_postings_list
+
+    def __add__(self, other: int):
+        new_postings_list = PostingsList()
+        new_postings_list.documents_index = self.documents_index
+        for item in self.list:
+            new_postings_list.add_item(item + 1)
         return new_postings_list
