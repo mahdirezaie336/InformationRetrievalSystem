@@ -41,8 +41,15 @@ class PositionalIndex:
             self.add_token(token, document, i)
 
     def check_phrase(self, phrase: list[str]):
+        postings_list = self.dictionary[phrase[0]]
+        for word in phrase[1:]:
+            postings_list += 1
+            postings_list = self.dictionary.get(word, PostingsList()) & postings_list
 
-        pass
+        result = {}
+        for item in postings_list.list:
+            result[item.doc_id] = len(item.indices)
+        return result
 
     def query(self, query: str):
         words = PositionalIndex.preprocess(query)
@@ -55,7 +62,7 @@ class PositionalIndex:
         for token in tokens:
             if token not in PositionalIndex.stop_words:
                 nonstop_tokens.append(token)
-        return pd.Series(nonstop_tokens).apply(PositionalIndex.stemmer.convert_to_stem).values  # Getting stems
+        return pd.Series(nonstop_tokens, dtype='object').apply(PositionalIndex.stemmer.convert_to_stem).values  # Getting stems
 
     def __str__(self):
         return str(self.dictionary)
