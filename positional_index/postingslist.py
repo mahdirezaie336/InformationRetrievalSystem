@@ -17,6 +17,17 @@ class Item:
     def __repr__(self):
         return str(self)
 
+    def __and__(self, other: 'Item'):
+        new_item = Item(0)
+        i, j = 0, 0
+        while i < len(self.indices) and j < len(other.indices):
+            if self.indices[i] == other.indices[j]:
+                new_item.indices.append(self.indices[i])
+            elif self.indices[i] > other.indices[j]:
+                j += 1
+            else:
+                i += 1
+
 
 class PostingsList:
 
@@ -42,3 +53,10 @@ class PostingsList:
 
     def __repr__(self):
         return str(self)
+
+    def __and__(self, other: 'PostingsList'):
+        new_list = []
+        i, j = 0, 0
+        while i < len(self.list) and j < len(other.list):
+            if self.list[i].doc_id == other.list[j].doc_id:
+                new_list.append()

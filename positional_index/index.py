@@ -40,6 +40,10 @@ class PositionalIndex:
         for i, token in enumerate(docs['tokens']):
             self.add_token(token, document, i)
 
+    def check_phrase(self, phrase: list[str]):
+
+        pass
+
     def query(self, query: str):
         words = PositionalIndex.preprocess(query)
 
