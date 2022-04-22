@@ -27,6 +27,7 @@ class Item:
                 j += 1
             else:
                 i += 1
+        return new_item
 
 
 class PostingsList:
@@ -48,6 +49,11 @@ class PostingsList:
             doc_index = self.documents_index[doc_id]
             self.list[doc_index].add_index(index)
 
+    def add_item(self, item: Item):
+        self.documents_index[item.doc_id] = len(self.list)
+        self.list.append(item)
+        # TODO: Handle when the new item was exists before
+
     def __str__(self):
         return str(self.list)
 
@@ -55,8 +61,15 @@ class PostingsList:
         return str(self)
 
     def __and__(self, other: 'PostingsList'):
-        new_list = []
+        new_postings_list = PostingsList()
         i, j = 0, 0
         while i < len(self.list) and j < len(other.list):
             if self.list[i].doc_id == other.list[j].doc_id:
-                new_list.append()
+                new_item = self.list[i] & other.list[j]
+                new_item.doc_id = self.list[i].doc_id
+                new_postings_list.add_item(new_item)
+            elif self.list[i].doc_id > other.list[j].doc_id:
+                j += 1
+            else:
+                i += 1
+        return new_postings_list
