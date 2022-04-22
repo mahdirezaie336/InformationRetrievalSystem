@@ -1,6 +1,6 @@
 from parsivar import Normalizer, Tokenizer, FindStems
 from stopwordsiso import stopwords
-from positional_index.index import PositionalIndex
+from positional_index import PositionalIndex
 import json
 import pandas as pd
 
