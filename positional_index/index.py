@@ -14,6 +14,7 @@ class PositionalIndex:
     tokenizer = Tokenizer()
     stemmer = FindStems()
     stop_words = stopwords('fa')
+    operations = {'"', '&', '|', '!'}
 
     def __init__(self):
         self.dictionary = {}
@@ -52,35 +53,35 @@ class PositionalIndex:
                 result[item.doc_id] = len(item)
         return result
 
-    def get_all_except(self, phrase: list[str]):
-        phrase_docs = self.get_phrase_docs(phrase)
+    def get_all_except(self, phrase):
+        phrase_docs = self.get_phrase_docs(phrase) if type(phrase) == list else phrase
         result = {}
         for key in self.dictionary:
             if key not in phrase_docs:
                 result[key] = 0
         return result
 
-    def get_phrase_except(self, phrase1: list[str], phrase2: list[str]):
-        phrase1_docs = self.get_phrase_docs(phrase1)
-        phrase2_docs = self.get_phrase_docs(phrase2)
+    def get_phrase_except(self, phrase1, phrase2):
+        phrase1_docs = self.get_phrase_docs(phrase1) if type(phrase1) == list else phrase1
+        phrase2_docs = self.get_phrase_docs(phrase2) if type(phrase2) == list else phrase2
         result = {}
         for key in phrase1_docs:
             if key not in phrase2_docs:
                 result[key] = phrase1_docs[key]
         return result
 
-    def get_phrase_and(self, phrase1: list[str], phrase2: list[str]):
-        phrase1_docs = self.get_phrase_docs(phrase1)
-        phrase2_docs = self.get_phrase_docs(phrase2)
+    def get_phrase_and(self, phrase1, phrase2):
+        phrase1_docs = self.get_phrase_docs(phrase1) if type(phrase1) == list else phrase1
+        phrase2_docs = self.get_phrase_docs(phrase2) if type(phrase2) == list else phrase2
         result = {}
         for key in phrase1_docs:
             if key in phrase2_docs:
                 result[key] = min(phrase1_docs[key], phrase2_docs[key])
         return result
 
-    def get_phrase_or(self, phrase1: list[str], phrase2: list[str]):
-        phrase1_docs = self.get_phrase_docs(phrase1)
-        phrase2_docs = self.get_phrase_docs(phrase2)
+    def get_phrase_or(self, phrase1, phrase2):
+        phrase1_docs = self.get_phrase_docs(phrase1) if type(phrase1) == list else phrase1
+        phrase2_docs = self.get_phrase_docs(phrase2) if type(phrase2) == list else phrase2
         result = phrase1_docs.copy()
         for key in phrase2_docs:
             if key in result:
@@ -89,6 +90,44 @@ class PositionalIndex:
 
     def query(self, query: str):
         words = PositionalIndex.preprocess(query)
+        stack = []
+        for i, word in enumerate(words):
+            # if the word is not an operation
+            if word not in PositionalIndex.operations:
+                if len(stack) == 0:
+                    stack.append(word)
+                else:
+                    n = self.get_phrase_and(stack.pop(), word)
+                    stack.append(n)
+            # If the word is an operation
+            else:
+                if word == '"':
+                    j = None
+                    for j, word2 in enumerate(words[i+1:]):
+                        if word2 == '"':
+                            break
+                    phrase = words[i+1:j+i+1]
+                    phrase_docs = self.get_phrase_docs(phrase)
+                    if len(stack) == 0:
+                        stack.append(phrase_docs)
+                    else:
+                        stack.append(self.get_phrase_and(stack.pop(), phrase_docs))
+                    del words[i: i+j+2]
+                elif word == '&':
+                    if words[i+1] != '!':
+                        n = self.get_phrase_and(stack.pop(), words[i+1])
+                        stack.append(n)
+                    else:
+                        n = self.get_phrase_except(stack.pop(), words[i+2])
+                        stack.append(n)
+                    del words[i:i+3]
+                elif word == '|':
+                    n = self.get_phrase_or(stack.pop(), words[i+1])
+                    stack.append(n)
+                    del words[i:i+2]
+                elif word == '!':
+                    pass
+
 
     @staticmethod
     def preprocess(text: str):
