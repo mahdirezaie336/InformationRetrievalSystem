@@ -23,6 +23,7 @@ def create_index(docs) -> PositionalIndex:
     index = PositionalIndex()
     for doc_id in docs:
         index.add_from_dict(doc_id, docs[doc_id])
+    index.finish_indexing()
     return index
 
 
@@ -35,7 +36,7 @@ def main():
 
     # Creating index
     index = create_index(docs)
-    print(index)
+    # TODO: Add tiny command interpreter
 
 
 if __name__ == '__main__':
