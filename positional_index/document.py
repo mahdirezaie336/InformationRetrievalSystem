@@ -31,6 +31,19 @@ class Document:
     def __le__(self, other):
         return self.id <= other.id
 
+    def to_dict(self, attrs=None):
+        if attrs is None:
+            return {'title': self.title,
+                    'content': self.content,
+                    'category': self.category,
+                    'date': self.date,
+                    'url': self.url,
+                    'tag': self.tags}
+        d = {}
+        for item in attrs:
+            d[item] = getattr(self, item)
+        return d
+
     @staticmethod
     def parse_from_dict(_id: str, d: dict) -> 'Document':
         doc = Document(int(_id))

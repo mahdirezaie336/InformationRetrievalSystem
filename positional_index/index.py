@@ -19,6 +19,7 @@ class PositionalIndex:
     def __init__(self):
         self.dictionary = {}
         self.documents = {}
+        self.documents_df = pd.DataFrame(columns=['title', 'content', 'tags', 'date', 'url', 'category'])
 
     def add_token(self, term: str, document: Document, index: int):
         doc_id = document.id
@@ -134,7 +135,18 @@ class PositionalIndex:
                     n = self.get_phrase_except(stack.pop(), [words[i+1]])
                     stack.append(n)
                     del words[i:i+2]
-        return stack[0]
+        s = pd.Series(stack[0], name='count').to_frame()
+        df = s.merge(self.documents_df, left_index=True, right_index=True)
+        df.sort_values(by='count', ascending=False, inplace=True)
+        return df.loc[:, ["title", "url"]]
+
+    def finish_indexing(self):
+        r = []
+        for doc_id in self.documents:
+            document = self.documents[doc_id]
+            s = pd.Series(document.to_dict(), name=document.id).to_frame().T
+            r.append(s)
+        self.documents_df = pd.concat(r)
 
     @staticmethod
     def preprocess(text: str):
