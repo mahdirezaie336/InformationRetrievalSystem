@@ -52,6 +52,14 @@ class PositionalIndex:
                 result[item.doc_id] = len(item)
         return result
 
+    def get_all_except(self, phrase: list[str]):
+        phrase_docs = self.check_phrase(phrase)
+        result = {}
+        for key in self.dictionary:
+            if key not in phrase_docs:
+                result[key] = 0
+        return result
+
     def query(self, query: str):
         words = PositionalIndex.preprocess(query)
 
