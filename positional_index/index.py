@@ -40,7 +40,7 @@ class PositionalIndex:
         for i, token in enumerate(docs['tokens']):
             self.add_token(token, document, i)
 
-    def check_phrase(self, phrase: list[str]):
+    def get_phrase_docs(self, phrase: list[str]):
         postings_list = self.dictionary[phrase[0]]
         for word in phrase[1:]:
             postings_list += 1
@@ -53,11 +53,38 @@ class PositionalIndex:
         return result
 
     def get_all_except(self, phrase: list[str]):
-        phrase_docs = self.check_phrase(phrase)
+        phrase_docs = self.get_phrase_docs(phrase)
         result = {}
         for key in self.dictionary:
             if key not in phrase_docs:
                 result[key] = 0
+        return result
+
+    def get_phrase_except(self, phrase1: list[str], phrase2: list[str]):
+        phrase1_docs = self.get_phrase_docs(phrase1)
+        phrase2_docs = self.get_phrase_docs(phrase2)
+        result = {}
+        for key in phrase1_docs:
+            if key not in phrase2_docs:
+                result[key] = phrase1_docs[key]
+        return result
+
+    def get_phrase_and(self, phrase1: list[str], phrase2: list[str]):
+        phrase1_docs = self.get_phrase_docs(phrase1)
+        phrase2_docs = self.get_phrase_docs(phrase2)
+        result = {}
+        for key in phrase1_docs:
+            if key in phrase2_docs:
+                result[key] = min(phrase1_docs[key], phrase2_docs[key])
+        return result
+
+    def get_phrase_or(self, phrase1: list[str], phrase2: list[str]):
+        phrase1_docs = self.get_phrase_docs(phrase1)
+        phrase2_docs = self.get_phrase_docs(phrase2)
+        result = phrase1_docs.copy()
+        for key in phrase2_docs:
+            if key in result:
+                result[key] = max(result[key], phrase2_docs[key])
         return result
 
     def query(self, query: str):
