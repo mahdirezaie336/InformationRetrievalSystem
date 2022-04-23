@@ -14,7 +14,7 @@ class PositionalIndex:
     tokenizer = Tokenizer()
     stemmer = FindStems()
     stop_words = stopwords('fa')
-    operations = {'"', '&', '|', '!'}
+    operations = {'"', '&', '|', '!', '&!'}
 
     def __init__(self):
         self.dictionary = {}
@@ -58,7 +58,7 @@ class PositionalIndex:
         result = {}
         for key in self.dictionary:
             if key not in phrase_docs:
-                result[key] = 0
+                result[key] = 1
         return result
 
     def get_phrase_except(self, phrase1, phrase2):
@@ -111,22 +111,28 @@ class PositionalIndex:
                     if len(stack) == 0:
                         stack.append(phrase_docs)
                     else:
-                        stack.append(self.get_phrase_and(stack.pop(), phrase_docs))
+                        n = self.get_phrase_and(stack.pop(), phrase_docs)
+                        stack.append(n)
                     del words[i: i+j+2]
                 elif word == '&':
-                    if words[i+1] != '!':
-                        n = self.get_phrase_and(stack.pop(), words[i+1])
-                        stack.append(n)
-                    else:
-                        n = self.get_phrase_except(stack.pop(), words[i+2])
-                        stack.append(n)
-                    del words[i:i+3]
+                    n = self.get_phrase_and(stack.pop(), words[i+1])
+                    stack.append(n)
+                    del words[i:i+2]
                 elif word == '|':
                     n = self.get_phrase_or(stack.pop(), words[i+1])
                     stack.append(n)
                     del words[i:i+2]
                 elif word == '!':
-                    pass
+                    if len(stack) == 0:
+                        n = self.get_all_except(words[i+1])
+                    else:
+                        n = self.get_phrase_except(stack.pop(), words[i+1])
+                    stack.append(n)
+                    del words[i:i+2]
+                elif word == '&!':
+                    n = self.get_phrase_except(stack.pop(), words[i+1])
+                    stack.append(n)
+                    del words[i:i+2]
 
 
     @staticmethod
