@@ -13,7 +13,7 @@ class PositionalIndex:
     normalizer = Normalizer()
     tokenizer = Tokenizer()
     stemmer = FindStems()
-    stop_words = stopwords('fa')
+    stop_words = stopwords('fa').difference('!')
     operations = {'"', '&', '|', '!', '&!'}
 
     def __init__(self):
@@ -95,9 +95,10 @@ class PositionalIndex:
             # if the word is not an operation
             if word not in PositionalIndex.operations:
                 if len(stack) == 0:
-                    stack.append(word)
+                    n = self.get_phrase_docs([word])
+                    stack.append(n)
                 else:
-                    n = self.get_phrase_and(stack.pop(), word)
+                    n = self.get_phrase_and(stack.pop(), [word])
                     stack.append(n)
             # If the word is an operation
             else:
@@ -115,25 +116,25 @@ class PositionalIndex:
                         stack.append(n)
                     del words[i: i+j+2]
                 elif word == '&':
-                    n = self.get_phrase_and(stack.pop(), words[i+1])
+                    n = self.get_phrase_and(stack.pop(), [words[i+1]])
                     stack.append(n)
                     del words[i:i+2]
                 elif word == '|':
-                    n = self.get_phrase_or(stack.pop(), words[i+1])
+                    n = self.get_phrase_or(stack.pop(), [words[i+1]])
                     stack.append(n)
                     del words[i:i+2]
                 elif word == '!':
                     if len(stack) == 0:
-                        n = self.get_all_except(words[i+1])
+                        n = self.get_all_except([words[i+1]])
                     else:
-                        n = self.get_phrase_except(stack.pop(), words[i+1])
+                        n = self.get_phrase_except(stack.pop(), [words[i+1]])
                     stack.append(n)
                     del words[i:i+2]
                 elif word == '&!':
-                    n = self.get_phrase_except(stack.pop(), words[i+1])
+                    n = self.get_phrase_except(stack.pop(), [words[i+1]])
                     stack.append(n)
                     del words[i:i+2]
-
+        return stack[0]
 
     @staticmethod
     def preprocess(text: str):
@@ -143,7 +144,9 @@ class PositionalIndex:
         for token in tokens:
             if token not in PositionalIndex.stop_words:
                 nonstop_tokens.append(token)
-        return pd.Series(nonstop_tokens, dtype='object').apply(PositionalIndex.stemmer.convert_to_stem).values  # Getting stems
+        return pd.Series(nonstop_tokens, dtype='object')\
+            .apply(PositionalIndex.stemmer.convert_to_stem)\
+            .values.tolist()  # Getting stems
 
     def __str__(self):
         return str(self.dictionary)
