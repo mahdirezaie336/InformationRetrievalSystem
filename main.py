@@ -36,7 +36,15 @@ def main():
 
     # Creating index
     index = create_index(docs)
-    # TODO: Add tiny command interpreter
+    while True:
+        text = input('Enter query: ')
+        n = int(input('How many result do you want us to show? '))
+        df = index.query(text).head(n)
+        for row in df.index:
+            print(row)
+            for col in df.columns:
+                print(col, df.loc[row, col])
+            print()
 
 
 if __name__ == '__main__':

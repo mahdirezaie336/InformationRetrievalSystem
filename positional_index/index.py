@@ -43,7 +43,7 @@ class PositionalIndex:
             self.add_token(token, document, i)
 
     def get_phrase_docs(self, phrase: list[str]):
-        postings_list = self.dictionary[phrase[0]]
+        postings_list = self.dictionary.get(phrase[0], PostingsList())
         for word in phrase[1:]:
             postings_list += 1
             postings_list = self.dictionary.get(word, PostingsList()) & postings_list
@@ -135,10 +135,10 @@ class PositionalIndex:
                     n = self.get_phrase_except(stack.pop(), [words[i+1]])
                     stack.append(n)
                     del words[i:i+2]
-        s = pd.Series(stack[0], name='count').to_frame()
+        s = pd.Series(stack[0], name='rank').to_frame()
         df = s.merge(self.documents_df, left_index=True, right_index=True)
-        df.sort_values(by='count', ascending=False, inplace=True)
-        return df.loc[:, ["title", "url"]]
+        df.sort_values(by='rank', ascending=False, inplace=True)
+        return df.loc[:, ["title", "url", "rank"]]
 
     def finish_indexing(self):
         r = []
@@ -158,7 +158,7 @@ class PositionalIndex:
                 nonstop_tokens.append(token)
         return pd.Series(nonstop_tokens, dtype='object')\
             .apply(PositionalIndex.stemmer.convert_to_stem)\
-            .values.tolist()  # Getting stems
+            .values.tolist()                                                # Getting stems
 
     def __str__(self):
         return str(self.dictionary)
