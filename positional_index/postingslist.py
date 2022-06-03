@@ -96,3 +96,10 @@ class PostingsList:
 
     def __len__(self):
         return len(self.list)
+
+    def get_term_frequency(self, doc_id):
+        index = self.documents_index[doc_id]
+        return self.list[index]
+
+    def get_document_frequency(self):
+        return len(self)

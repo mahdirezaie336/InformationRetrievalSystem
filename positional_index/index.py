@@ -1,3 +1,6 @@
+import math
+
+import numpy
 from parsivar import Normalizer, Tokenizer, FindStems
 from stopwordsiso import stopwords
 
@@ -147,6 +150,16 @@ class PositionalIndex:
             s = pd.Series(document.to_dict(), name=document.id).to_frame().T
             r.append(s)
         self.documents_df = pd.concat(r)
+
+    def get_tf_idf(self, term: str, doc_id: int):
+        if term not in self.dictionary:
+            return 0
+
+        postings_list = self.dictionary[term]
+        n = len(self.documents)
+        tf = 1 + math.log(postings_list.get_term_frequency(doc_id))
+        idf = math.log10(n) - math.log10(postings_list.get_document_frequency())
+        return tf * idf
 
     @staticmethod
     def preprocess(text: str):
