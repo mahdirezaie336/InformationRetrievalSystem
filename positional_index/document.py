@@ -1,9 +1,12 @@
+import pandas as pd
+
+
 class Document:
 
     def __init__(self, _id):
         self.id = _id
         self.content = ''
-        self.tokens = []
+        self.tokens = set()
         self.title = ''
         self.date = ''
         self.url = ''
@@ -54,5 +57,5 @@ class Document:
         doc.url = d['url']
         doc.category = d['category']
         if 'tokens' in d:
-            doc.tokens = d['tokens']
+            doc.tokens = set(d['tokens'])
         return doc

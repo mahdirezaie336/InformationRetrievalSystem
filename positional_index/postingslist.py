@@ -99,9 +99,9 @@ class PostingsList:
 
     def get_term_frequency(self, doc_id):
         if doc_id not in self.documents_index:
-            return 0
+            return 0.0
         index = self.documents_index[doc_id]
-        return self.list[index]
+        return len(self.list[index])
 
     def get_document_frequency(self):
         return len(self)

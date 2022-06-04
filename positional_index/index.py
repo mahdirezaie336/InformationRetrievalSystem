@@ -1,6 +1,7 @@
 import math
 
-import numpy
+import numpy as np
+import heapq
 from parsivar import Normalizer, Tokenizer, FindStems
 from stopwordsiso import stopwords
 
@@ -151,15 +152,52 @@ class PositionalIndex:
             r.append(s)
         self.documents_df = pd.concat(r)
 
-    def get_tf_idf(self, term: str, doc_id: int):
+    def get_term_weight(self, term: str, doc_id: int):
         if term not in self.dictionary:
             return 0
 
         postings_list = self.dictionary[term]
         n = len(self.documents)
-        tf = 1 + math.log(postings_list.get_term_frequency(doc_id))
-        idf = math.log10(n) - math.log10(postings_list.get_document_frequency())
+        tf = np.log(1 + postings_list.get_term_frequency(doc_id))
+        idf = np.log2(n) - np.log10(postings_list.get_document_frequency())
         return tf * idf
+
+    def get_cosine_similarity(self, doc1: Document, doc2: Document):
+        ab = 0
+        a2 = 0
+        b2 = 0
+        for token in doc1.tokens:
+            w1 = self.get_term_weight(token, doc1.id)
+            w2 = self.get_term_weight(token, doc2.id)
+            if token in doc2.tokens:
+                ab += w1 * w2
+            a2 += w1 * w1
+        for token in doc2.tokens:
+            w2 = self.get_term_weight(token, doc2.id)
+            b2 += w2 * w2
+        if a2 == 0 or b2 == 0:
+            return 0.0
+        return ab / (np.sqrt(a2) * np.sqrt(b2))
+
+    def ranked_query(self, query: str, k_best=10):
+        query_as_doc = Document(-1)
+        query_as_doc.tokens = set(PositionalIndex.preprocess(query))
+        result = []
+        for doc_id in self.documents:
+            doc = self.documents[doc_id]
+            result.append((doc_id, self.get_cosine_similarity(query_as_doc, doc)))
+        result = np.array(result)
+
+        # Handling k > len(docs) error
+        if k_best > len(result):
+            k_best = len(result)
+
+        # Finding k-best result
+        arg_result = result[:, 1].argpartition(-1 * k_best, axis=1)[-1 * k_best:]
+        arg_result = arg_result.sort()[:-1]
+        similarity = pd.Series(data=result[arg_result, 1], index=result[arg_result, 0], name="similarity")
+        df = self.documents_df.merge(similarity, right_index=True, left_index=True)
+        return df.loc[arg_result, ["title", "url", "similarity"]]
 
     @staticmethod
     def preprocess(text: str):
