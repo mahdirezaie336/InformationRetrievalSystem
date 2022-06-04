@@ -162,30 +162,47 @@ class PositionalIndex:
         idf = np.log2(n) - np.log10(postings_list.get_document_frequency())
         return tf * idf
 
-    def get_cosine_similarity(self, doc1: Document, doc2: Document):
+    def get_cosine_similarity(self, doc1, doc2: Document, query=True):
         ab = 0
         a2 = 0
         b2 = 0
-        for token in doc1.tokens:
-            w1 = self.get_term_weight(token, doc1.id)
-            w2 = self.get_term_weight(token, doc2.id)
-            if token in doc2.tokens:
-                ab += w1 * w2
-            a2 += w1 * w1
+
+        if not query:
+            for token in doc1.tokens:
+                w1 = self.get_term_weight(token, doc1.id)
+                w2 = self.get_term_weight(token, doc2.id)
+                if token in doc2.tokens:
+                    ab += w1 * w2
+                a2 += w1 * w1
+        else:
+            for token in doc1:
+                doc1: list
+                postings_list = self.dictionary[token]
+                n = len(self.documents)
+                tf = np.log(1 + doc1.count(token))
+                idf = np.log2(n) - np.log10(postings_list.get_document_frequency())
+                w1 = tf * idf
+                w2 = self.get_term_weight(token, doc2.id)
+                if token in doc2.tokens:
+                    ab += w1 * w2
+                a2 += w1 * w1
+
         for token in doc2.tokens:
             w2 = self.get_term_weight(token, doc2.id)
             b2 += w2 * w2
+
+        # Handling divide by zero
         if a2 == 0 or b2 == 0:
             return 0.0
+
         return ab / (np.sqrt(a2) * np.sqrt(b2))
 
     def ranked_query(self, query: str, k_best=10):
-        query_as_doc = Document(-1)
-        query_as_doc.tokens = set(PositionalIndex.preprocess(query))
+        query_as_doc = PositionalIndex.preprocess(query)
         result = []
         for doc_id in self.documents:
             doc = self.documents[doc_id]
-            result.append((doc_id, self.get_cosine_similarity(query_as_doc, doc)))
+            result.append((doc_id, self.get_cosine_similarity(query_as_doc, doc, query=True)))
         result = np.array(result)
 
         # Handling k > len(docs) error
@@ -193,11 +210,13 @@ class PositionalIndex:
             k_best = len(result)
 
         # Finding k-best result
-        arg_result = result[:, 1].argpartition(-1 * k_best, axis=1)[-1 * k_best:]
-        arg_result = arg_result.sort()[:-1]
+        arg_result = result[:, 1].argpartition(-1 * k_best)[-1 * k_best:]
         similarity = pd.Series(data=result[arg_result, 1], index=result[arg_result, 0], name="similarity")
         df = self.documents_df.merge(similarity, right_index=True, left_index=True)
-        return df.loc[arg_result, ["title", "url", "similarity"]]
+        return df.loc[arg_result, ["title", "url", "similarity"]].sort_values(by="similarity", ascending=False)
+
+    def ranked_query_fast(self, query: str):
+        pass
 
     @staticmethod
     def preprocess(text: str):
