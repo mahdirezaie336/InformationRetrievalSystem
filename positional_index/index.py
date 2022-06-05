@@ -197,12 +197,22 @@ class PositionalIndex:
 
         return ab / (np.sqrt(a2) * np.sqrt(b2))
 
-    def ranked_query(self, query: str, k_best=10):
-        query_as_doc = PositionalIndex.preprocess(query)
+    def ranked_query(self, query: str, k_best=10, fast=False):
+        query_tokens = PositionalIndex.preprocess(query)
+
+        # If we are going to use champ list or no
+        if not fast:
+            docs = self.documents
+        else:
+            docs = set()
+            for term in query_tokens:
+                docs = docs | set(self.dictionary[term].get_docs_list())
+
+        # Finding docs and similarity
         result = []
-        for doc_id in self.documents:
+        for doc_id in docs:
             doc = self.documents[doc_id]
-            result.append((doc_id, self.get_cosine_similarity(query_as_doc, doc, query=True)))
+            result.append((doc_id, self.get_cosine_similarity(query_tokens, doc, query=True)))
         result = np.array(result)
 
         # Handling k > len(docs) error
@@ -215,11 +225,8 @@ class PositionalIndex:
         df = self.documents_df.merge(similarity, right_index=True, left_index=True)
         return df.loc[arg_result, ["title", "url", "similarity"]].sort_values(by="similarity", ascending=False)
 
-    def ranked_query_fast(self, query: str):
-        pass
-
     @staticmethod
-    def preprocess(text: str):
+    def preprocess(text: str) -> list[str]:
         normalized_text = PositionalIndex.normalizer.normalize(text)        # Normalization
         tokens = PositionalIndex.tokenizer.tokenize_words(normalized_text)  # Tokenization
         nonstop_tokens = []                                                 # Handling stop words

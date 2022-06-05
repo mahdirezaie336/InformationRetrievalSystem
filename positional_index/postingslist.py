@@ -105,3 +105,9 @@ class PostingsList:
 
     def get_document_frequency(self):
         return len(self)
+
+    def get_docs_list(self):
+        result = []
+        for item in self.list:
+            result.append(item.doc_id)
+        return result
